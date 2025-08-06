@@ -1,3 +1,0 @@
-/home/kimjw/systemC/10_pe/build/CMakeFiles/test.dir
-/home/kimjw/systemC/10_pe/build/CMakeFiles/edit_cache.dir
-/home/kimjw/systemC/10_pe/build/CMakeFiles/rebuild_cache.dir

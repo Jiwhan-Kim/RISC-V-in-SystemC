@@ -1,1 +1,0 @@
-/usr/bin/c++ -rdynamic CMakeFiles/test.dir/main.cpp.o CMakeFiles/test.dir/matmul.cpp.o CMakeFiles/test.dir/memory.cpp.o CMakeFiles/test.dir/tb.cpp.o -o test   -L/home/kimjw/systemC/systemc-3.0.1/lib-linux64  -Wl,-rpath,/home/kimjw/systemC/systemc-3.0.1/lib-linux64 -lsystemc 
