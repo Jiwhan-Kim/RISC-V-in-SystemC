@@ -177,6 +177,30 @@ matmul.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/matmul.cpp.s
 .PHONY : matmul.cpp.s
 
+memory.o: memory.cpp.o
+.PHONY : memory.o
+
+# target to build an object file
+memory.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/memory.cpp.o
+.PHONY : memory.cpp.o
+
+memory.i: memory.cpp.i
+.PHONY : memory.i
+
+# target to preprocess a source file
+memory.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/memory.cpp.i
+.PHONY : memory.cpp.i
+
+memory.s: memory.cpp.s
+.PHONY : memory.s
+
+# target to generate assembly for a file
+memory.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/memory.cpp.s
+.PHONY : memory.cpp.s
+
 tb.o: tb.cpp.o
 .PHONY : tb.o
 
@@ -216,6 +240,9 @@ help:
 	@echo "... matmul.o"
 	@echo "... matmul.i"
 	@echo "... matmul.s"
+	@echo "... memory.o"
+	@echo "... memory.i"
+	@echo "... memory.s"
 	@echo "... tb.o"
 	@echo "... tb.i"
 	@echo "... tb.s"

@@ -1,10 +1,12 @@
 #include "matmul.hpp"
+#include "memory.hpp"
 #include "sysc/tracing/sc_trace.h"
 #include "tb.hpp"
 #include <systemc.h>
 
 SC_MODULE(SYSTEM) {
   tb *tb0;
+  mem *mem0;
   matmul *matmul0;
 
   sc_clock clk_sig;
@@ -66,24 +68,28 @@ SC_MODULE(SYSTEM) {
     tb0->en(en_sig);
     tb0->status(status_sig);
 
-    tb0->awaddr(awaddr);
-    tb0->awvalid(awvalid);
-    tb0->awready(awready);
+    mem0 = new mem("mem0");
+    mem0->clk(clk_sig);
+    mem0->rst(rst_sig);
 
-    tb0->wdata(wdata);
-    tb0->wvalid(wvalid);
-    tb0->wready(wready);
+    mem0->awaddr(awaddr);
+    mem0->awvalid(awvalid);
+    mem0->awready(awready);
 
-    tb0->bvalid(bvalid);
-    tb0->bready(bready);
+    mem0->wdata(wdata);
+    mem0->wvalid(wvalid);
+    mem0->wready(wready);
 
-    tb0->araddr(araddr);
-    tb0->arvalid(arvalid);
-    tb0->arready(arready);
+    mem0->bvalid(bvalid);
+    mem0->bready(bready);
 
-    tb0->rdata(rdata);
-    tb0->rvalid(rvalid);
-    tb0->rready(rready);
+    mem0->araddr(araddr);
+    mem0->arvalid(arvalid);
+    mem0->arready(arready);
+
+    mem0->rdata(rdata);
+    mem0->rvalid(rvalid);
+    mem0->rready(rready);
 
     matmul0 = new matmul("matmul");
     matmul0->clk(clk_sig);
@@ -113,6 +119,7 @@ SC_MODULE(SYSTEM) {
 
   ~SYSTEM() {
     delete tb0;
+    delete mem0;
     delete matmul0;
   }
 };
