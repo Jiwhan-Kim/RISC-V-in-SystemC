@@ -1,88 +1,112 @@
 #include "tb.hpp"
-#include <cstdio>
+#include <cstring>
 
-void tb::source() {
-  sc_int<16> tmp;
+void tb::tb_main() {
+  // Initialize memory and outputs
+  for (unsigned i = 0; i < MEM_SIZE; ++i)
+    memory[i] = 0;
 
-  // Reset protocol
-  inp.write(0);
-  inp_vld.write(0);
+  memory[0x100 >> 2] = 0x1000; // A
+  memory[0x104 >> 2] = 0x2000; // B
+  memory[0x108 >> 2] = 0x2;    // M
+  memory[0x10c >> 2] = 0x3;    // N
+  memory[0x110 >> 2] = 0x2;    // K
+  memory[0x114 >> 2] = 0x3000; // C
 
-  rst.write(1);
+  float sample_A[6] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+  float sample_B[6] = {7.0, 10.0, 8.0, 11.0, 9.0, 12.0};
+  memcpy(&memory[0x1000 >> 2], &sample_A, sizeof(sample_A));
+  memcpy(&memory[0x2000 >> 2], &sample_B, sizeof(sample_B));
+
+  awready.write(false);
+  wready.write(false);
+  bvalid.write(false);
+  arready.write(false);
+  rdata.write(0);
+  rvalid.write(false);
   wait();
 
-  rst.write(0);
-  wait();
+  unsigned int waddr = 0;
+  unsigned int raddr = 0;
+  bool bresp_pending = false;
+  bool read_pending = false;
 
-  // Send stimulus to FIR
-  for (int i = 0; i < 64; i++) {
-    if (i > 23 && i < 29)
-      tmp = 256;
-    else
-      tmp = 0;
+  while (true) {
+    // Defaults each cycle
+    awready.write(false);
+    wready.write(false);
+    arready.write(false);
 
-    // handshaking
-    inp_vld.write(1);
-    inp.write(tmp);
+    // Handle write address
+    if (awvalid.read()) {
+      waddr = awaddr.read() / 4;
+      awready.write(true);
+    }
 
-    // to caculate the latency
-    start_time[i] = sc_time_stamp();
+    // Handle write data
+    if (wvalid.read()) {
+      memory[waddr] = wdata.read();
+      wready.write(true);
+      bresp_pending = true;
 
-    do {
-      // waiting clock
-      wait();
-    } while (!inp_rdy.read());
-    inp_vld.write(0);
+      // cout << "debug\n";
+    }
 
-    // no handshaking
-    // inp.write(tmp);
-    // wait();
+    // Handle write response
+    if (bresp_pending) {
+      bvalid.write(true);
+      if (bready.read()) {
+        bvalid.write(false);
+        bresp_pending = false;
+      }
+    } else {
+      bvalid.write(false);
+    }
+
+    // Handle read address
+    if (arvalid.read()) {
+      raddr = araddr.read() / 4;
+      arready.write(true);
+      read_pending = true;
+    }
+
+    // Handle read data
+    if (read_pending) {
+      rdata.write(memory[raddr]);
+      rvalid.write(true);
+      if (rready.read()) {
+        rvalid.write(false);
+        read_pending = false;
+      }
+    } else {
+      rvalid.write(false);
+    }
+
+    wait();
   }
 }
 
-void tb::sink() {
-  sc_int<16> indata;
+void tb::tb_matmul() {
+  en.write(false);
+  wait();
 
-  // Extract Clock Period
-  sc_clock *clk_p = dynamic_cast<sc_clock *>(clk.get_interface());
-  clock_period = clk_p->period();
+  for (unsigned int i = 0; i < 5; i++)
+    wait();
 
-  // Open Simulation output results file
-  char output_file[256];
-  sprintf(output_file, "./output.dat");
-  outfp = fopen(output_file, "w");
-  if (outfp == NULL) {
-    cout << "Error opening output file: " << output_file << endl;
-    exit(0);
+  en.write(true);
+  wait();
+
+  en.write(false);
+  do {
+    wait();
+  } while (status.read() == 1);
+
+  float c[4];
+  memcpy(c, &memory[0x3000 >> 2], sizeof(c));
+
+  for (int i = 0; i < 4; i++) {
+    cout << c[i] << '\t';
   }
-
-  // Initialize port
-  outp_rdy.write(0);
-
-  double total_cycles = 0;
-
-  // Read output coming from DUT
-  for (int i = 0; i < 64; i++) {
-    outp_rdy.write(1);
-    do {
-      wait();
-    } while (!outp_vld.read());
-    indata = outp.read();
-    end_time[i] = sc_time_stamp();
-    total_cycles += (end_time[i] - start_time[i]) / clock_period;
-    outp_rdy.write(0);
-
-    fprintf(outfp, "%d\n", (int)indata);
-    cout << i << " :\t" << indata.to_int() << endl;
-  }
-
-  // Print Latency
-  double total_throughput = (start_time[63] - start_time[0]) / clock_period;
-  printf("Average Latency is %g cycles.\n", (double)(total_cycles / 64));
-  printf("Average throughput is %g cycles per input.\n",
-         (double)(total_throughput / 63));
-  // End simulation
-  fclose(outfp);
-
+  cout << endl;
   sc_stop();
 }

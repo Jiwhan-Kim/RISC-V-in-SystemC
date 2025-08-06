@@ -1,30 +1,50 @@
 #include <systemc.h>
 
-SC_MODULE(tb) {
-  // unit time
-  sc_time start_time[64], end_time[64], clock_period;
+#define MEM_SIZE (1 << 20)
+#define ADDR_WIDTH sc_unit<32>
+#define DATA_WIDTH sc_unit<32>
 
+SC_MODULE(tb) {
   sc_in<bool> clk;
   sc_out<bool> rst;
+  sc_out<bool> en;
+  sc_in<sc_uint<2>> status;
 
-  sc_out<sc_int<16>> inp;
-  sc_out<bool> inp_vld;
-  sc_in<bool> inp_rdy;
+  // Write address channel
+  sc_in<sc_uint<32>> awaddr;
+  sc_in<bool> awvalid;
+  sc_out<bool> awready;
 
-  sc_in<sc_int<16>> outp;
-  sc_in<bool> outp_vld;
-  sc_out<bool> outp_rdy;
+  // Write data channel
+  sc_in<sc_uint<32>> wdata;
+  sc_in<bool> wvalid;
+  sc_out<bool> wready;
 
-  void source();
-  void sink();
+  // Write response channel
+  sc_out<bool> bvalid;
+  sc_in<bool> bready;
+
+  // Read address channel
+  sc_in<sc_uint<32>> araddr;
+  sc_in<bool> arvalid;
+  sc_out<bool> arready;
+
+  // Read data channel
+  sc_out<sc_uint<32>> rdata;
+  sc_out<bool> rvalid;
+  sc_in<bool> rready;
+
+  // Memory Model
+  unsigned int memory[1 << 20];
+
+  void tb_main();
+  void tb_matmul();
 
   FILE *outfp;
 
   SC_CTOR(tb) {
-    // gives output data (rst, inp, ...)
-    SC_CTHREAD(source, clk.pos());
-
-    // gets input data (outp, ...)
-    SC_CTHREAD(sink, clk.pos());
+    SC_CTHREAD(tb_main, clk.pos());
+    SC_CTHREAD(tb_matmul, clk.pos());
+    reset_signal_is(rst, true);
   }
 };
