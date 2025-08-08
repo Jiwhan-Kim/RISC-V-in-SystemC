@@ -1,5 +1,6 @@
 #include "matmul.hpp"
 #include "memory.hpp"
+#include "rv32i.hpp"
 #include "sysc/tracing/sc_trace.h"
 #include "tb.hpp"
 #include <systemc.h>
@@ -8,11 +9,12 @@ SC_MODULE(SYSTEM) {
   tb *tb0;
   mem *mem0;
   matmul *matmul0;
+  rv32i *rv32i0;
 
   sc_clock clk_sig;
   sc_signal<bool> rst_sig;
-  sc_signal<bool> en_sig;
-  sc_signal<sc_uint<2>> status_sig;
+  sc_signal<bool> en_sig[2];
+  sc_signal<sc_uint<2>> status_sig[2];
 
   sc_signal<sc_uint<32>> awaddr;
   sc_signal<bool> awvalid;
@@ -40,8 +42,10 @@ SC_MODULE(SYSTEM) {
     fp->set_time_unit(100, SC_PS);
     sc_trace(fp, clk_sig, "CLK");
     sc_trace(fp, rst_sig, "reset");
-    sc_trace(fp, en_sig, "enable");
-    sc_trace(fp, status_sig, "status");
+    sc_trace(fp, en_sig[0], "enable0");
+    sc_trace(fp, status_sig[0], "status0");
+    sc_trace(fp, en_sig[1], "enable1");
+    sc_trace(fp, status_sig[1], "status1");
 
     sc_trace(fp, awaddr, "awaddr");
     sc_trace(fp, awvalid, "awvalid");
@@ -65,8 +69,10 @@ SC_MODULE(SYSTEM) {
     tb0 = new tb("tb0");
     tb0->clk(clk_sig);
     tb0->rst(rst_sig);
-    tb0->en(en_sig);
-    tb0->status(status_sig);
+    tb0->en[0](en_sig[0]);
+    tb0->status[0](status_sig[0]);
+    tb0->en[1](en_sig[1]);
+    tb0->status[1](status_sig[1]);
 
     mem0 = new mem("mem0");
     mem0->clk(clk_sig);
@@ -94,8 +100,8 @@ SC_MODULE(SYSTEM) {
     matmul0 = new matmul("matmul");
     matmul0->clk(clk_sig);
     matmul0->rst(rst_sig);
-    matmul0->en(en_sig);
-    matmul0->status(status_sig);
+    matmul0->en(en_sig[0]);
+    matmul0->status(status_sig[0]);
 
     matmul0->awaddr(awaddr);
     matmul0->awvalid(awvalid);
