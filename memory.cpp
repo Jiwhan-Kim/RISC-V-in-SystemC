@@ -71,6 +71,7 @@ void mem::mem_main() {
     // Handle read data
     if (read_pending) {
       rdata.write(memory[raddr]);
+      // cout << memory[raddr] << " read" << endl;
       rvalid.write(true);
       if (rready.read()) {
         rvalid.write(false);
