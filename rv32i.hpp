@@ -44,6 +44,18 @@ SC_MODULE(rv32i) {
 
   void rv32i_main();
 
+  inline sc_uint<32> sext(sc_uint<32> v, int bits) {
+    sc_uint<32> mask = (bits == 32) ? 0xffffffffu : ((1u << bits) - 1u);
+    sc_uint<32> x = v & mask;
+    sc_uint<32> sign = (bits == 32) ? 0u : (1u << (bits - 1));
+    return (x ^ sign) - sign;
+  }
+
+  void axi_read32(uint32_t addr, uint32_t &data);
+  void axi_write32(uint32_t addr, uint32_t data);
+  uint32_t axi_read32_blocking(uint32_t addr);
+  void axi_write32_blocking(uint32_t addr, uint32_t data);
+
   SC_CTOR(rv32i) {
     SC_CTHREAD(rv32i_main, clk.pos());
     reset_signal_is(rst, true);

@@ -38,7 +38,6 @@ void tb::tb_riscv() {
   en[1].write(false);
   do {
     wait();
-
   } while (status[1].read() == 1);
 
   sc_stop();

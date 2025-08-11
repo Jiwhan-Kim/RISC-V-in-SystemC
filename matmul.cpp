@@ -78,12 +78,13 @@ void matmul::matmul_main() {
         // calculate C[row][col]
         for (unsigned int col = 0; col < data[4]; col++) {
           for (unsigned int k = 0; k < data[3]; k++) {
-            araddr.write(data[1] + (k * data[4] + col) * 4);
-            arvalid.write(true);
-            do {
-              wait();
-            } while (!arready.read());
-            arvalid.write(true);
+          araddr.write(data[1] + (k * data[4] + col) * 4);
+          arvalid.write(true);
+          do {
+            wait();
+          } while (!arready.read());
+          // Deassert ARVALID after the address handshake
+          arvalid.write(false);
 
             rready.write(true);
             do {
@@ -111,26 +112,25 @@ void matmul::matmul_main() {
           }
 
           // write result to memory
+          unsigned int acc_int;
+          std::memcpy(&acc_int, &acc, sizeof(acc_int));
+
           // Write address
           awaddr.write(data[5] + (row * data[4] + col) * 4);
           awvalid.write(true);
-          do {
-            wait();
-          } while (!awready.read());
-          awvalid.write(false);
-
-          unsigned int acc_int;
-          std::memcpy(&acc_int, &acc, sizeof(acc_int));
           // Write data
           wdata.write(acc_int);
           wvalid.write(true);
+
+          bready.write(true);
+
           do {
             wait();
-          } while (!wready.read());
+          } while (!(awready.read() && wready.read()));
+          awvalid.write(false);
           wvalid.write(false);
 
           // Wait for write response
-          bready.write(true);
           do {
             wait();
           } while (!bvalid.read());
