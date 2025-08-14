@@ -70,11 +70,12 @@ void rv32i::rv32i_main() {
     if (en.read() == true) {
       status.write(0x01); // busy
 
-      // Initialize state on start
-      pc = 0u;
       for (int i = 0; i < 32; ++i)
         reg[i] = 0;
 
+      // Initialize state on start
+      uint32_t v = axi_read32_blocking(0x200);
+      pc = v;
       const int max_steps =
           2048; // safety budget to avoid infinite loops in empty memory
       int steps = 0;
@@ -83,6 +84,7 @@ void rv32i::rv32i_main() {
       while (!done && steps < max_steps) {
         // Fetch
         uint32_t instr = axi_read32_blocking(pc);
+        cout << std::hex << instr << endl;
 
         // Decode fields
         uint32_t opcode = instr & 0x7fu;
@@ -118,6 +120,7 @@ void rv32i::rv32i_main() {
 
         switch (opcode) {
         case 0x37: // LUI
+          cout << "LUI" << endl;
           set_reg(rd, imm_u);
           break;
         case 0x17: // AUIPC

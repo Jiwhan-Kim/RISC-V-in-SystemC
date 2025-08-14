@@ -30,6 +30,10 @@ void tb::tb_riscv() {
 
   do {
     wait();
+  } while (status[0].read() == 0);
+
+  do {
+    wait();
   } while (status[0].read() == 1);
 
   en[1].write(true);
