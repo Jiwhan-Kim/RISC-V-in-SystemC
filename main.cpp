@@ -161,24 +161,27 @@ SC_MODULE(SYSTEM) {
     matmul0->en(en_sig[0]);
     matmul0->status(status_sig[0]);
 
-    matmul0->awaddr(m_awaddr[0]);
-    matmul0->awvalid(m_awvalid[0]);
-    matmul0->awready(m_awready[0]);
+    // Connect AXI master bundle for matmul
+    matmul0->axi->clk(clk_sig);
+    matmul0->axi->rst(rst_sig);
+    matmul0->axi->awaddr(m_awaddr[0]);
+    matmul0->axi->awvalid(m_awvalid[0]);
+    matmul0->axi->awready(m_awready[0]);
 
-    matmul0->wdata(m_wdata[0]);
-    matmul0->wvalid(m_wvalid[0]);
-    matmul0->wready(m_wready[0]);
+    matmul0->axi->wdata(m_wdata[0]);
+    matmul0->axi->wvalid(m_wvalid[0]);
+    matmul0->axi->wready(m_wready[0]);
 
-    matmul0->bvalid(m_bvalid[0]);
-    matmul0->bready(m_bready[0]);
+    matmul0->axi->bvalid(m_bvalid[0]);
+    matmul0->axi->bready(m_bready[0]);
 
-    matmul0->araddr(m_araddr[0]);
-    matmul0->arvalid(m_arvalid[0]);
-    matmul0->arready(m_arready[0]);
+    matmul0->axi->araddr(m_araddr[0]);
+    matmul0->axi->arvalid(m_arvalid[0]);
+    matmul0->axi->arready(m_arready[0]);
 
-    matmul0->rdata(m_rdata[0]);
-    matmul0->rvalid(m_rvalid[0]);
-    matmul0->rready(m_rready[0]);
+    matmul0->axi->rdata(m_rdata[0]);
+    matmul0->axi->rvalid(m_rvalid[0]);
+    matmul0->axi->rready(m_rready[0]);
 
     rv32i0 = new rv32i("rv32i");
     rv32i0->clk(clk_sig);
@@ -186,24 +189,27 @@ SC_MODULE(SYSTEM) {
     rv32i0->en(en_sig[1]);
     rv32i0->status(status_sig[1]);
 
-    rv32i0->awaddr(m_awaddr[1]);
-    rv32i0->awvalid(m_awvalid[1]);
-    rv32i0->awready(m_awready[1]);
+    // Connect AXI master bundle for rv32i
+    rv32i0->axi->clk(clk_sig);
+    rv32i0->axi->rst(rst_sig);
+    rv32i0->axi->awaddr(m_awaddr[1]);
+    rv32i0->axi->awvalid(m_awvalid[1]);
+    rv32i0->axi->awready(m_awready[1]);
 
-    rv32i0->wdata(m_wdata[1]);
-    rv32i0->wvalid(m_wvalid[1]);
-    rv32i0->wready(m_wready[1]);
+    rv32i0->axi->wdata(m_wdata[1]);
+    rv32i0->axi->wvalid(m_wvalid[1]);
+    rv32i0->axi->wready(m_wready[1]);
 
-    rv32i0->bvalid(m_bvalid[1]);
-    rv32i0->bready(m_bready[1]);
+    rv32i0->axi->bvalid(m_bvalid[1]);
+    rv32i0->axi->bready(m_bready[1]);
 
-    rv32i0->araddr(m_araddr[1]);
-    rv32i0->arvalid(m_arvalid[1]);
-    rv32i0->arready(m_arready[1]);
+    rv32i0->axi->araddr(m_araddr[1]);
+    rv32i0->axi->arvalid(m_arvalid[1]);
+    rv32i0->axi->arready(m_arready[1]);
 
-    rv32i0->rdata(m_rdata[1]);
-    rv32i0->rvalid(m_rvalid[1]);
-    rv32i0->rready(m_rready[1]);
+    rv32i0->axi->rdata(m_rdata[1]);
+    rv32i0->axi->rvalid(m_rvalid[1]);
+    rv32i0->axi->rready(m_rready[1]);
   }
 
   ~SYSTEM() {

@@ -12,39 +12,39 @@ void matmul::axi_write32(uint32_t addr, uint32_t d) {
 }
 
 uint32_t matmul::axi_read32_blocking(uint32_t addr) {
-  araddr.write(addr);
-  arvalid.write(true);
+  axi->araddr.write(addr);
+  axi->arvalid.write(true);
   do {
     wait();
-  } while (!arready.read());
-  arvalid.write(false);
+  } while (!axi->arready.read());
+  axi->arvalid.write(false);
 
-  rready.write(true);
+  axi->rready.write(true);
   do {
     wait();
-  } while (!rvalid.read());
-  uint32_t v = rdata.read().to_uint();
-  rready.write(false);
+  } while (!axi->rvalid.read());
+  uint32_t v = axi->rdata.read().to_uint();
+  axi->rready.write(false);
   return v;
 }
 
 void matmul::axi_write32_blocking(uint32_t addr, uint32_t d) {
-  awaddr.write(addr);
-  awvalid.write(true);
-  wdata.write(d);
-  wvalid.write(true);
-  bready.write(true);
+  axi->awaddr.write(addr);
+  axi->awvalid.write(true);
+  axi->wdata.write(d);
+  axi->wvalid.write(true);
+  axi->bready.write(true);
 
   do {
     wait();
-  } while (!(awready.read() && wready.read()));
-  awvalid.write(false);
-  wvalid.write(false);
+  } while (!(axi->awready.read() && axi->wready.read()));
+  axi->awvalid.write(false);
+  axi->wvalid.write(false);
 
   do {
     wait();
-  } while (!bvalid.read());
-  bready.write(false);
+  } while (!axi->bvalid.read());
+  axi->bready.write(false);
 }
 
 /**
@@ -63,14 +63,14 @@ void matmul::axi_write32_blocking(uint32_t addr, uint32_t d) {
  *
  */
 void matmul::matmul_main() {
-  awaddr.write(0);
-  awvalid.write(false);
-  wdata.write(0);
-  wvalid.write(false);
-  bready.write(false);
-  araddr.write(0);
-  arvalid.write(false);
-  rready.write(false);
+  axi->awaddr.write(0);
+  axi->awvalid.write(false);
+  axi->wdata.write(0);
+  axi->wvalid.write(false);
+  axi->bready.write(false);
+  axi->araddr.write(0);
+  axi->arvalid.write(false);
+  axi->rready.write(false);
   status.write(0x0);
   wait();
 

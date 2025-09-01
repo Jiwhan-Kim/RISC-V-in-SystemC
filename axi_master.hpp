@@ -1,0 +1,46 @@
+#ifndef AXI_MASTER_HPP_
+#define AXI_MASTER_HPP_
+
+#include <systemc.h>
+#ifndef ADDR_WIDTH
+#define ADDR_WIDTH sc_uint<32>
+#endif
+
+#ifndef DATA_WIDTH
+#define DATA_WIDTH sc_uint<32>
+#endif
+
+// Generic AXI-like master port shell: clk, rst, and AXI channels
+SC_MODULE(axi_master) {
+  // Clock and reset
+  sc_in<bool> clk;
+  sc_in<bool> rst;
+
+  // Write Address Channel
+  sc_out<ADDR_WIDTH> awaddr;
+  sc_out<bool> awvalid;
+  sc_in<bool> awready;
+
+  // Write Data Channel
+  sc_out<DATA_WIDTH> wdata;
+  sc_out<bool> wvalid;
+  sc_in<bool> wready;
+
+  // Write Response Channel
+  sc_in<bool> bvalid;
+  sc_out<bool> bready;
+
+  // Read Address Channel
+  sc_out<ADDR_WIDTH> araddr;
+  sc_out<bool> arvalid;
+  sc_in<bool> arready;
+
+  // Read Data Channel
+  sc_in<DATA_WIDTH> rdata;
+  sc_in<bool> rvalid;
+  sc_out<bool> rready;
+
+  SC_CTOR(axi_master) {}
+};
+
+#endif // AXI_MASTER_HPP_
