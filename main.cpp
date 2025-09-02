@@ -27,6 +27,7 @@ SC_MODULE(SYSTEM) {
   // Write response channel
   sc_signal<bool> m_bvalid[MASTER];
   sc_signal<bool> m_bready[MASTER];
+  sc_signal<sc_uint<2>> m_bresp[MASTER];
 
   // Read address channel
   sc_signal<sc_uint<32>> m_araddr[MASTER];
@@ -37,6 +38,7 @@ SC_MODULE(SYSTEM) {
   sc_signal<sc_uint<32>> m_rdata[MASTER];
   sc_signal<bool> m_rvalid[MASTER];
   sc_signal<bool> m_rready[MASTER];
+  sc_signal<sc_uint<2>> m_rresp[MASTER];
 
   // Slave signalterface signals (memory)
   // Write Address Channel
@@ -52,6 +54,7 @@ SC_MODULE(SYSTEM) {
   // Write Response Channel
   sc_signal<bool> s_bvalid;
   sc_signal<bool> s_bready;
+  sc_signal<sc_uint<2>> s_bresp;
 
   // Read Address Channel
   sc_signal<sc_uint<32>> s_araddr;
@@ -62,6 +65,7 @@ SC_MODULE(SYSTEM) {
   sc_signal<sc_uint<32>> s_rdata;
   sc_signal<bool> s_rvalid;
   sc_signal<bool> s_rready;
+  sc_signal<sc_uint<2>> s_rresp;
 
   sc_clock clk_sig;
   sc_signal<bool> rst_sig;
@@ -136,24 +140,30 @@ SC_MODULE(SYSTEM) {
     mem0->clk(clk_sig);
     mem0->rst(rst_sig);
 
-    mem0->awaddr(s_awaddr);
-    mem0->awvalid(s_awvalid);
-    mem0->awready(s_awready);
+    // Connect AXI slave bundle for memory
+    mem0->axi->clk(clk_sig);
+    mem0->axi->rst(rst_sig);
 
-    mem0->wdata(s_wdata);
-    mem0->wvalid(s_wvalid);
-    mem0->wready(s_wready);
+    mem0->axi->awaddr(s_awaddr);
+    mem0->axi->awvalid(s_awvalid);
+    mem0->axi->awready(s_awready);
 
-    mem0->bvalid(s_bvalid);
-    mem0->bready(s_bready);
+    mem0->axi->wdata(s_wdata);
+    mem0->axi->wvalid(s_wvalid);
+    mem0->axi->wready(s_wready);
 
-    mem0->araddr(s_araddr);
-    mem0->arvalid(s_arvalid);
-    mem0->arready(s_arready);
+    mem0->axi->bvalid(s_bvalid);
+    mem0->axi->bready(s_bready);
+    mem0->axi->bresp(s_bresp);
 
-    mem0->rdata(s_rdata);
-    mem0->rvalid(s_rvalid);
-    mem0->rready(s_rready);
+    mem0->axi->araddr(s_araddr);
+    mem0->axi->arvalid(s_arvalid);
+    mem0->axi->arready(s_arready);
+
+    mem0->axi->rdata(s_rdata);
+    mem0->axi->rvalid(s_rvalid);
+    mem0->axi->rready(s_rready);
+    mem0->axi->rresp(s_rresp);
 
     matmul0 = new matmul("matmul");
     matmul0->clk(clk_sig);
@@ -174,6 +184,7 @@ SC_MODULE(SYSTEM) {
 
     matmul0->axi->bvalid(m_bvalid[0]);
     matmul0->axi->bready(m_bready[0]);
+    matmul0->axi->bresp(m_bresp[0]);
 
     matmul0->axi->araddr(m_araddr[0]);
     matmul0->axi->arvalid(m_arvalid[0]);
@@ -182,6 +193,7 @@ SC_MODULE(SYSTEM) {
     matmul0->axi->rdata(m_rdata[0]);
     matmul0->axi->rvalid(m_rvalid[0]);
     matmul0->axi->rready(m_rready[0]);
+    matmul0->axi->rresp(m_rresp[0]);
 
     rv32i0 = new rv32i("rv32i");
     rv32i0->clk(clk_sig);
@@ -202,6 +214,7 @@ SC_MODULE(SYSTEM) {
 
     rv32i0->axi->bvalid(m_bvalid[1]);
     rv32i0->axi->bready(m_bready[1]);
+    rv32i0->axi->bresp(m_bresp[1]);
 
     rv32i0->axi->araddr(m_araddr[1]);
     rv32i0->axi->arvalid(m_arvalid[1]);
@@ -210,6 +223,7 @@ SC_MODULE(SYSTEM) {
     rv32i0->axi->rdata(m_rdata[1]);
     rv32i0->axi->rvalid(m_rvalid[1]);
     rv32i0->axi->rready(m_rready[1]);
+    rv32i0->axi->rresp(m_rresp[1]);
   }
 
   ~SYSTEM() {

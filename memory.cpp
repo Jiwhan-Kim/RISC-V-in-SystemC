@@ -30,12 +30,14 @@ void mem::mem_main() {
   memcpy(&memory[0x1000 >> 2], &sample_A, sizeof(sample_A));
   memcpy(&memory[0x2000 >> 2], &sample_B, sizeof(sample_B));
 
-  awready.write(false);
-  wready.write(false);
-  bvalid.write(false);
-  arready.write(false);
-  rdata.write(0);
-  rvalid.write(false);
+  axi->awready.write(false);
+  axi->wready.write(false);
+  axi->bvalid.write(false);
+  axi->bresp.write(0);
+  axi->arready.write(false);
+  axi->rdata.write(0);
+  axi->rvalid.write(false);
+  axi->rresp.write(0);
   wait();
 
   unsigned int waddr = 0;
@@ -45,55 +47,57 @@ void mem::mem_main() {
 
   while (true) {
     // Defaults each cycle
-    awready.write(false);
-    wready.write(false);
-    arready.write(false);
+    axi->awready.write(false);
+    axi->wready.write(false);
+    axi->arready.write(false);
 
     // Handle write address
-    if (awvalid.read()) {
-      waddr = awaddr.read() / 4;
-      awready.write(true);
+    if (axi->awvalid.read()) {
+      waddr = axi->awaddr.read() / 4;
+      axi->awready.write(true);
     }
 
     // Handle write data
-    if (wvalid.read()) {
-      memory[waddr] = wdata.read();
-      cout << "memory[" << std::hex << waddr << "] = " << std::hex
-           << memory[waddr] << endl;
-      wready.write(true);
+    if (axi->wvalid.read()) {
+      memory[waddr] = axi->wdata.read();
+      // cout << "memory[" << std::hex << waddr << "] = " << std::hex
+      //      << memory[waddr] << endl;
+      axi->wready.write(true);
       bresp_pending = true;
     }
 
     // Handle write response
     if (bresp_pending) {
-      bvalid.write(true);
-      if (bready.read()) {
-        bvalid.write(false);
+      axi->bvalid.write(true);
+      axi->bresp.write(0); // OKAY
+      if (axi->bready.read()) {
+        axi->bvalid.write(false);
         bresp_pending = false;
       }
     } else {
-      bvalid.write(false);
+      axi->bvalid.write(false);
     }
 
     // Handle read address
-    if (arvalid.read()) {
-      raddr = araddr.read() / 4;
-      arready.write(true);
+    if (axi->arvalid.read()) {
+      raddr = axi->araddr.read() / 4;
+      axi->arready.write(true);
       read_pending = true;
     }
 
     // Handle read data
     if (read_pending) {
-      rdata.write(memory[raddr]);
+      axi->rdata.write(memory[raddr]);
       // cout << std::hex << raddr << ": " << std::hex << memory[raddr] << "
       // read" << endl;
-      rvalid.write(true);
-      if (rready.read()) {
-        rvalid.write(false);
+      axi->rvalid.write(true);
+      axi->rresp.write(0); // OKAY
+      if (axi->rready.read()) {
+        axi->rvalid.write(false);
         read_pending = false;
       }
     } else {
-      rvalid.write(false);
+      axi->rvalid.write(false);
     }
 
     wait();
