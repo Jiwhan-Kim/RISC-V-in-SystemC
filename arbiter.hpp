@@ -20,6 +20,7 @@ SC_MODULE(arbiter) {
   // Write response channel
   sc_out<bool> m_bvalid[MASTER];
   sc_in<bool> m_bready[MASTER];
+  sc_out<sc_uint<2>> m_bresp[MASTER];
 
   // Read address channel
   sc_in<sc_uint<32>> m_araddr[MASTER];
@@ -30,6 +31,7 @@ SC_MODULE(arbiter) {
   sc_out<sc_uint<32>> m_rdata[MASTER];
   sc_out<bool> m_rvalid[MASTER];
   sc_in<bool> m_rready[MASTER];
+  sc_out<sc_uint<2>> m_rresp[MASTER];
 
   // Slave interface signals (memory)
   // Write Address Channel
@@ -45,6 +47,7 @@ SC_MODULE(arbiter) {
   // Write Response Channel
   sc_in<bool> s_bvalid;
   sc_out<bool> s_bready;
+  sc_in<sc_uint<2>> s_bresp;
 
   // Read Address Channel
   sc_out<sc_uint<32>> s_araddr;
@@ -55,6 +58,7 @@ SC_MODULE(arbiter) {
   sc_in<sc_uint<32>> s_rdata;
   sc_in<bool> s_rvalid;
   sc_out<bool> s_rready;
+  sc_in<sc_uint<2>> s_rresp;
 
   void arbiter_main();
 

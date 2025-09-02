@@ -25,7 +25,12 @@ uint32_t rv32i::axi_read32_blocking(uint32_t addr) {
     wait();
   } while (!axi->rvalid.read());
   uint32_t v = axi->rdata.read().to_uint();
+  sc_uint<2> rr = axi->rresp.read();
   axi->rready.write(false);
+  // Check read response and trap on error
+  if (rr != 0) {
+    fault_trap();
+  }
   return v;
 }
 
@@ -47,7 +52,19 @@ void rv32i::axi_write32_blocking(uint32_t addr, uint32_t data) {
   do {
     wait();
   } while (!axi->bvalid.read());
+  sc_uint<2> br = axi->bresp.read();
   axi->bready.write(false);
+  // Check write response and trap on error
+  if (br != 0) {
+    fault_trap();
+  }
+}
+
+void rv32i::fault_trap() {
+  status.write(0x02);
+  while (true) {
+    wait();
+  }
 }
 
 void rv32i::rv32i_main() {

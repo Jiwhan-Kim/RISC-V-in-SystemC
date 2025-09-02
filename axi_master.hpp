@@ -29,6 +29,7 @@ SC_MODULE(axi_master) {
   // Write Response Channel
   sc_in<bool> bvalid;
   sc_out<bool> bready;
+  sc_in<sc_uint<2>> bresp;
 
   // Read Address Channel
   sc_out<ADDR_WIDTH> araddr;
@@ -39,6 +40,15 @@ SC_MODULE(axi_master) {
   sc_in<DATA_WIDTH> rdata;
   sc_in<bool> rvalid;
   sc_out<bool> rready;
+  sc_in<sc_uint<2>> rresp;
+
+  /**
+   * response (bresp, rresp)
+   *  0x0: OKAY
+   *  0x1: EXOKAY
+   *  0x2: SLVERR
+   *  0x3: DECERR
+   */
 
   SC_CTOR(axi_master) {}
 };

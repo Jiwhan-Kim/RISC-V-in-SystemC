@@ -32,6 +32,7 @@ SC_MODULE(rv32i) {
   void axi_write32(uint32_t addr, uint32_t data);
   uint32_t axi_read32_blocking(uint32_t addr);
   void axi_write32_blocking(uint32_t addr, uint32_t data);
+  void fault_trap();
 
   SC_CTOR(rv32i) {
     axi = new axi_master("axi");
