@@ -107,6 +107,7 @@ SC_MODULE(SYSTEM) {
 
       arbiter0->m_bvalid[i](m_bvalid[i]);
       arbiter0->m_bready[i](m_bready[i]);
+      arbiter0->m_bresp[i](m_bresp[i]);
 
       arbiter0->m_araddr[i](m_araddr[i]);
       arbiter0->m_arvalid[i](m_arvalid[i]);
@@ -115,6 +116,7 @@ SC_MODULE(SYSTEM) {
       arbiter0->m_rdata[i](m_rdata[i]);
       arbiter0->m_rvalid[i](m_rvalid[i]);
       arbiter0->m_rready[i](m_rready[i]);
+      arbiter0->m_rresp[i](m_rresp[i]);
     }
 
     arbiter0->s_awaddr(s_awaddr);
@@ -127,6 +129,7 @@ SC_MODULE(SYSTEM) {
 
     arbiter0->s_bvalid(s_bvalid);
     arbiter0->s_bready(s_bready);
+    arbiter0->s_bresp(s_bresp);
 
     arbiter0->s_araddr(s_araddr);
     arbiter0->s_arvalid(s_arvalid);
@@ -135,6 +138,7 @@ SC_MODULE(SYSTEM) {
     arbiter0->s_rdata(s_rdata);
     arbiter0->s_rvalid(s_rvalid);
     arbiter0->s_rready(s_rready);
+    arbiter0->s_rresp(s_rresp);
 
     mem0 = new mem("mem0");
     mem0->clk(clk_sig);

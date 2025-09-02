@@ -45,10 +45,10 @@ SC_MODULE(axi_slave) {
 
   /**
    * response (bresp, rresp)
-   *  0x00: OKAY
-   *  0x01: EXOKAY
-   *  0x10: SLVERR
-   *  0x11: DECERR
+   *  0x0: OKAY
+   *  0x1: EXOKAY
+   *  0x2: SLVERR
+   *  0x3: DECERR
    */
 
   SC_CTOR(axi_slave) {}

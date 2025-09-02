@@ -24,7 +24,12 @@ uint32_t matmul::axi_read32_blocking(uint32_t addr) {
     wait();
   } while (!axi->rvalid.read());
   uint32_t v = axi->rdata.read().to_uint();
+  sc_uint<2> rr = axi->rresp.read();
   axi->rready.write(false);
+  // Check read response and trap on error
+  if (rr != 0) {
+    fault_trap();
+  }
   return v;
 }
 
@@ -44,7 +49,19 @@ void matmul::axi_write32_blocking(uint32_t addr, uint32_t d) {
   do {
     wait();
   } while (!axi->bvalid.read());
+  sc_uint<2> br = axi->bresp.read();
   axi->bready.write(false);
+  // Check write response and trap on error
+  if (br != 0) {
+    fault_trap();
+  }
+}
+
+void matmul::fault_trap() {
+  status.write(0x02);
+  while (true) {
+    wait();
+  }
 }
 
 /**
@@ -79,7 +96,7 @@ void matmul::matmul_main() {
       status.write(0x01);
       // read A, B, M, N, K, C base addresses/params via AXI helper
       for (unsigned int i = 0; i < 6; i++) {
-        uint32_t v = axi_read32_blocking(0x100 + i * 4);
+        uint32_t v = axi_read32_blocking(0x10000000 + i * 4);
         data[i] = (int32_t)v;
         if (i >= 2 && i <= 4 && data[i] == 0 || (i == 3 && data[i] > 1024)) {
           status.write(0x02);

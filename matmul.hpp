@@ -31,6 +31,7 @@ SC_MODULE(matmul) {
   void axi_write32(uint32_t addr, uint32_t data);
   uint32_t axi_read32_blocking(uint32_t addr);
   void axi_write32_blocking(uint32_t addr, uint32_t data);
+  void fault_trap();
 
   void matmul_main();
 

@@ -5,9 +5,11 @@ void arbiter::arbiter_main() {
     m_awready[i].write(false);
     m_wready[i].write(false);
     m_bvalid[i].write(false);
+    m_bresp[i].write(0);
     m_arready[i].write(false);
     m_rdata[i].write(0);
     m_rvalid[i].write(false);
+    m_rresp[i].write(0);
   }
 
   s_awaddr.write(0);
@@ -15,6 +17,7 @@ void arbiter::arbiter_main() {
   s_wdata.write(0);
   s_wvalid.write(false);
   s_bready.write(false);
+  // responses are inputs from slave
   s_araddr.write(0);
   s_arvalid.write(false);
   s_rready.write(false);
@@ -59,6 +62,7 @@ void arbiter::arbiter_main() {
       }
     } else {
       m_bvalid[w_owner].write(s_bvalid.read());
+      m_bresp[w_owner].write(s_bresp.read());
       s_bready.write(m_bready[w_owner].read());
       if (s_bvalid.read() && m_bready[w_owner].read()) {
         w_busy = false;
@@ -84,6 +88,7 @@ void arbiter::arbiter_main() {
     } else {
       m_rdata[r_owner].write(s_rdata.read());
       m_rvalid[r_owner].write(s_rvalid.read());
+      m_rresp[r_owner].write(s_rresp.read());
       s_rready.write(m_rready[r_owner].read());
 
       if (s_rvalid.read() && m_rready[r_owner].read()) {

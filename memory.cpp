@@ -42,6 +42,11 @@ void mem::mem_main() {
 
   unsigned int waddr = 0;
   unsigned int raddr = 0;
+  unsigned int waddr_raw = 0;
+  unsigned int raddr_raw = 0;
+  sc_uint<2> bresp_code = 0;
+  sc_uint<2> rresp_code = 0;
+  unsigned int rdata_latched = 0;
   bool bresp_pending = false;
   bool read_pending = false;
 
@@ -53,15 +58,26 @@ void mem::mem_main() {
 
     // Handle write address
     if (axi->awvalid.read()) {
-      waddr = axi->awaddr.read() / 4;
+      waddr_raw = axi->awaddr.read();
+      waddr = waddr_raw / 4;
       axi->awready.write(true);
     }
 
     // Handle write data
     if (axi->wvalid.read()) {
-      memory[waddr] = axi->wdata.read();
-      // cout << "memory[" << std::hex << waddr << "] = " << std::hex
-      //      << memory[waddr] << endl;
+      // Validate alignment and range
+      bool aligned = ((waddr_raw & 0x3u) == 0u);
+      bool in_range = (waddr < MEM_SIZE);
+
+      if (aligned && in_range) {
+        memory[waddr] = axi->wdata.read();
+        bresp_code = 0; // OKAY
+      } else {
+        // Do not modify memory on error
+        bresp_code =
+            in_range ? (sc_uint<2>)2 : (sc_uint<2>)3; // SLVERR or DECERR
+      }
+
       axi->wready.write(true);
       bresp_pending = true;
     }
@@ -69,7 +85,7 @@ void mem::mem_main() {
     // Handle write response
     if (bresp_pending) {
       axi->bvalid.write(true);
-      axi->bresp.write(0); // OKAY
+      axi->bresp.write(bresp_code);
       if (axi->bready.read()) {
         axi->bvalid.write(false);
         bresp_pending = false;
@@ -80,18 +96,28 @@ void mem::mem_main() {
 
     // Handle read address
     if (axi->arvalid.read()) {
-      raddr = axi->araddr.read() / 4;
+      raddr_raw = axi->araddr.read();
+      raddr = raddr_raw / 4;
+      // Validate immediately and latch data/resp for this request
+      bool aligned = ((raddr_raw & 0x3u) == 0u);
+      bool in_range = (raddr < MEM_SIZE);
+      if (aligned && in_range) {
+        rdata_latched = memory[raddr];
+        rresp_code = 0; // OKAY
+      } else {
+        rdata_latched = 0; // return zero data on error
+        rresp_code =
+            in_range ? (sc_uint<2>)2 : (sc_uint<2>)3; // SLVERR or DECERR
+      }
       axi->arready.write(true);
       read_pending = true;
     }
 
     // Handle read data
     if (read_pending) {
-      axi->rdata.write(memory[raddr]);
-      // cout << std::hex << raddr << ": " << std::hex << memory[raddr] << "
-      // read" << endl;
+      axi->rdata.write(rdata_latched);
       axi->rvalid.write(true);
-      axi->rresp.write(0); // OKAY
+      axi->rresp.write(rresp_code);
       if (axi->rready.read()) {
         axi->rvalid.write(false);
         read_pending = false;
